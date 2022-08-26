@@ -23,15 +23,12 @@ class Product
         //Set title 
         $title = $name." ".$capacity;
 
-
-
         //Get price
         $price = $elementCrawler -> filter('div.my-8.block.text-center.text-lg') -> text();
         $price = filter_var($price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
-
+        //Get image
         $imageUrl = $elementCrawler-> filter('.my-8.mx-auto') -> image() -> getUri();
-
 
         //Get availability text
         $availability = $elementCrawler -> filter('div.my-4.text-sm.block.text-center');
@@ -56,9 +53,9 @@ class Product
 
         //Create an array with the same product in diffrerent colors
         $productOptions = [];
-        $colors = $elementCrawler -> filter('div.px-2 > span') -> extract(['data-colour']);
-        //$colors = $elementCrawler -> filter("span[data-colour]");
-        //print_r($colors);
+
+        $colors = $elementCrawler -> filter("span[data-colour]") -> extract(['data-colour']);
+
         foreach($colors as $color) {
 
             $product = array();
@@ -75,10 +72,6 @@ class Product
 
             array_push($productOptions, $product);
         }
-
-        //print_r($name . " " . $capacity);
-       // print_r($colorOptions);
-
 
         return $productOptions;
     }

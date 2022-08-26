@@ -30,74 +30,56 @@ class ScrapeHelper
         $month = "";
         $year = "";
 
-
-
-        // Delivers Thursday 25th Aug 2022
-        // Order within 6 hours and have it 27 Aug 2022
-        // Delivers 25 Aug 2022
-        // Delivery by Friday 26th Aug 2022
-
-
         //Case when date shows tomorrow
         if(str_contains($shippingText, 'tomorrow'))
         {
               $date = new DateTime('tomorrow');
               return $date->format('Y-m-d');
         
-        }elseif($shippingText === 'Free Delivery' || $shippingText === 'Free Shipping' ) {
-                return null;
-        }
-        else {
-            
-            //remove all words that are not months
-        
+        } else {
 
-
-            //Case when date matches the format: 03/03/2012 , 30-01-22 , 1 2 2005
-            //$datePattern = '/\d{4}-\d{1,2}-\d{1,2}/';
-            $datePattern = '/([0-9]?[0-9])[\.\-\/ ]+([0-1]?[0-9])[\.\-\/ ]+([0-9]{2,4})/';
+            //Case when date matches the format: 03/03/2012 , 30-01-22
+            $datePattern = '/([0-9]?[0-9])[\-\/]+([0-1]?[0-9])[\-\/]+([0-9]{2,4})/';
             preg_match( $datePattern, $shippingText, $matches );
+
             if ($matches) {
                 $day = $matches[1];
                 $month = $matches[2];
                 $year = $matches[3];
             } else {
 
-                $datePattern = '/\d{1,2}([a-z]{2})?\s[A-Z][a-z]{2}\s\d{4}/';
-                preg_match($datePattern, $shippingText, $shippingDate);
-
                 //Case when date matches the format: 25 Aug 2022, 1st Sep 2022
-                
-                //Remove ordinal numbers from the date: 'st', 'nd', 'rd', 'th'
+                $datePattern = '/\d{1,2}([a-z]{2})?\s[A-Z][a-z]{2}\s\d{4}/';
+                preg_match($datePattern, $shippingText, $matches);
 
-                $splitDate = explode(" ", $shippingDate[0]);
-
-                
-
-                $day = $splitDate[0];
-
-                $day = preg_replace('/[a-z]{2}/' ,'' ,$day);
-    
-                //Replaces day '1' '5' to '01', '05'
-                if(array_key_exists($day, $daysMap)) {
-
-                    $day = $daysMap[$day];
-                }
-                            
-                //Replaces 'Jan', 'Feb' to '01', '02'
-                $month = $monthsMap[$splitDate[1]];
-                
-                $year = $splitDate[2];
-                
-            }
-
-            //Concatenate string into correct date format
-            $shippingDate = $year . "-" . $month . "-" . $day;
-
-
-        }
-
+                if($matches) {
         
+                    $splitDate = explode(" ", $matches[0]);
+
+                    $day = $splitDate[0];
+
+                    //Remove ordinal numbers from the date: 'st', 'nd', 'rd', 'th'
+                    $day = preg_replace('/[a-z]{2}/' ,'' ,$day);
+        
+                    //Replaces day '1' '5' to '01', '05'
+                    if(array_key_exists($day, $daysMap)) {
+                        $day = $daysMap[$day];
+                    }
+                                
+                    //Replaces 'Jan', 'Feb' to '01', '02'
+                    $month = $monthsMap[$splitDate[1]];
+                    
+
+                    //Replaces with year
+                    $year = $splitDate[2];
+
+                } else {    //Case when no date was found: "Free Delivery"
+                    return null;
+                }
+            }
+        }
+         //Concatenate string into correct date format for all cases when a date was found
+         $shippingDate = $year . "-" . $month . "-" . $day;
 
         return $shippingDate;
     }
